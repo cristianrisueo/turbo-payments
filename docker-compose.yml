@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  # MongoDB database for users
+  users_db:
+    image: mongo:8.0
+    container_name: users_mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: users123
+      MONGO_INITDB_DATABASE: users_db
+    volumes:
+      - users_mongodb_data:/data/db
+    networks:
+      - turbo_payments_network
+
+volumes:
+  users_mongodb_data:
+    driver: local
+
+networks:
+  turbo_payments_network:
+    driver: bridge
