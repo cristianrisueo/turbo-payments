@@ -1,0 +1,29 @@
+{
+  "name": "turbo-payments",
+  "version": "1.0.0",
+  "description": "P2P payments system with microservices architecture",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean"
+  },
+  "keywords": [
+    "payments",
+    "microservices",
+    "nestjs",
+    "nextjs",
+    "turborepo"
+  ],
+  "author": "cristianrisueo",
+  "license": "ISC",
+  "devDependencies": {
+    "turbo": "^2.5.5"
+  }
+}
