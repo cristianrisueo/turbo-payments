@@ -46,7 +46,7 @@ export class AuthenticateUserUseCase {
   async execute(
     userData: AuthenticateUserRequest,
   ): Promise<AuthenticateUserResponse> {
-    // Creates an email value object from user data.
+    // Creates an email value object from the user's data.
     const emailVO = Email.create(userData.email);
 
     // Finds the user by email. Throws an error if user doesn't exist.
@@ -55,13 +55,13 @@ export class AuthenticateUserUseCase {
       throw new Error('Invalid credentials');
     }
 
-    // Verifies the password is correct using the User's entity method.
+    // Verifies if the password is correct using the User's entity method.
     const isValidPassword = await user.authenticate(userData.password);
     if (!isValidPassword) {
       throw new Error('Invalid credentials');
     }
 
-    // Generates a JWT token for the authenticated user using ID and email as claims.
+    // Generates a JWT token for the authenticated user using its ID and email as claims.
     const accessToken = this.jwtService.generateToken(
       user.id,
       user.email.value,
