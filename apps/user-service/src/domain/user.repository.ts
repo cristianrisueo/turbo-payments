@@ -54,8 +54,8 @@ export interface UserRepositoryInterface {
   updateBalance(id: string, newBalance: Amount): Promise<void>;
 
   /**
-   * Deletes a user by their ID.
-   * @param {string} id - The user ID to delete.
+   * Deletes a user by ID.
+   * @param {string} id - The user ID.
    * @returns {Promise<void>} Promise that resolves when user is deleted.
    * @throws {Error} If user doesn't exist or delete operation fails.
    */
