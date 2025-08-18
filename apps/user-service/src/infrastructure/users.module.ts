@@ -17,8 +17,8 @@ import { ChangePasswordUseCase } from '../application/changePassword';
 import { UpdateBalanceUseCase } from '../application/updateBalance';
 
 // Infrastructure
-import { UserRepository } from '../infrastruture/mongo.repository';
-import { UserSchema } from '../infrastruture/mongo.schema';
+import { UserRepository } from './mongo.repository';
+import { UserSchema } from './mongo.schema';
 import { UserController } from './users.controller';
 
 /**
