@@ -115,7 +115,7 @@ export class UserController {
    * GET /users/:email
    */
   @Auth()
-  @Get(':email')
+  @Get('email/:email')
   @HttpCode(HttpStatus.OK)
   async getUserByEmail(
     @Param('email') email: string,

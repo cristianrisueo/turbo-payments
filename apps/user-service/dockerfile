@@ -1,5 +1,5 @@
-# Use Node.js 18 Alpine for smaller image size
-FROM node:18-alpine
+# Use Node.js 20 Alpine for better compatibility
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -8,23 +8,22 @@ WORKDIR /app
 COPY package*.json ./
 COPY apps/user-service/package*.json ./apps/user-service/
 
-# Install dependencies
-RUN npm ci --only=production
+# Install ALL dependencies (including dev) for building
+RUN npm ci
 
 # Copy source code
 COPY apps/user-service ./apps/user-service
 COPY packages ./packages
 
-# Build the application
+# Build the application from the user-service directory
 WORKDIR /app/apps/user-service
 RUN npm run build
+
+# Debug: Check what files were created and find main.js
+RUN find /app -name "main.js" -type f
 
 # Expose the port
 EXPOSE 3001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3001/users || exit 1
-
-# Start the application
-CMD ["npm", "run", "start:prod"]
+# Start the application using the correct path to main.js
+CMD ["node", "dist/apps/user-service/src/main.js"]
