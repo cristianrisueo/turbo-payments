@@ -7,15 +7,41 @@ services:
     container_name: users_mongodb
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "${USERS_DB_PORT}:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: users123
-      MONGO_INITDB_DATABASE: users_db
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
     volumes:
       - users_mongodb_data:/data/db
     networks:
       - turbo_payments_network
+
+  # User Service
+  user-service:
+    build:
+      context: .
+      dockerfile: apps/user-service/Dockerfile
+    container_name: turbo_user_service
+    restart: unless-stopped
+    environment:
+      USERS_DB_URL: ${USERS_DB_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      PORT: ${USER_SERVICE_PORT}
+      NODE_ENV: ${NODE_ENV}
+    ports:
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    depends_on:
+      - users_db
+    networks:
+      - turbo_payments_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${USER_SERVICE_PORT}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   users_mongodb_data:
