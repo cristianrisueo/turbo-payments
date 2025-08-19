@@ -17,6 +17,20 @@ import { MongooseModule } from "@nestjs/mongoose";
         return usersConfig;
       },
     }),
+
+    // Payments database connection
+    MongooseModule.forRootAsync({
+      connectionName: "payments",
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const paymentsConfig = configService.get("db.payments");
+        if (!paymentsConfig) {
+          throw new Error("Payments database configuration not found");
+        }
+
+        return paymentsConfig;
+      },
+    }),
   ],
 })
 export class DbModule {}
