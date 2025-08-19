@@ -10,10 +10,26 @@ services:
       - "${USERS_DB_PORT}:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+      MONGO_INITDB_ROOT_PASSWORD: ${USERS_MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${USERS_MONGO_INITDB_DATABASE}
     volumes:
       - users_mongodb_data:/data/db
+    networks:
+      - turbo_payments_network
+
+  # MongoDB database for payments
+  payments_db:
+    image: mongo:8.0
+    container_name: payments_mongodb
+    restart: unless-stopped
+    ports:
+      - "${PAYMENTS_DB_PORT}:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${PAYMENTS_MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${PAYMENTS_MONGO_INITDB_DATABASE}
+    volumes:
+      - payments_mongodb_data:/data/db
     networks:
       - turbo_payments_network
 
@@ -22,7 +38,7 @@ services:
     build:
       context: .
       dockerfile: apps/user-service/Dockerfile
-    container_name: turbo_user_service
+    container_name: user_service
     restart: unless-stopped
     environment:
       USERS_DB_URL: ${USERS_DB_URL}
@@ -45,6 +61,8 @@ services:
 
 volumes:
   users_mongodb_data:
+    driver: local
+  payments_mongodb_data:
     driver: local
 
 networks:
