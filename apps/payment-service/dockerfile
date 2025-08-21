@@ -1,0 +1,29 @@
+# Use Node.js 20 Alpine for better compatibility
+FROM node:20-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files for dependency installation
+COPY package*.json ./
+COPY apps/payment-service/package*.json ./apps/payment-service/
+
+# Install ALL dependencies (including dev) for building
+RUN npm ci
+
+# Copy source code
+COPY apps/payment-service ./apps/payment-service
+COPY packages ./packages
+
+# Build the application from the payment-service directory
+WORKDIR /app/apps/payment-service
+RUN npm run build
+
+# Debug: Check what files were created and find main.js
+RUN find /app -name "main.js" -type f
+
+# Expose the port
+EXPOSE 3002
+
+# Start the application using the correct path to main.js
+CMD ["node", "dist/main.js"]

@@ -59,6 +59,34 @@ services:
       retries: 3
       start_period: 40s
 
+  # Payment Service
+  payment-service:
+    build:
+      context: .
+      dockerfile: apps/payment-service/Dockerfile
+    container_name: payment_service
+    restart: unless-stopped
+    environment:
+      PAYMENTS_DB_URL: ${PAYMENTS_DB_URL}
+      USERS_SERVICE_URL: ${USERS_SERVICE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      PORT: ${PAYMENT_SERVICE_PORT}
+      NODE_ENV: ${NODE_ENV}
+    ports:
+      - "${PAYMENT_SERVICE_PORT}:${PAYMENT_SERVICE_PORT}"
+    depends_on:
+      - payments_db
+      - user-service
+    networks:
+      - turbo_payments_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:${PAYMENT_SERVICE_PORT}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
 volumes:
   users_mongodb_data:
     driver: local
