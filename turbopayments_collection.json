@@ -1,0 +1,1538 @@
+{
+  "info": {
+    "name": "Turbo Payments API",
+    "description": "Complete API collection for Turbo Payments microservices system. Tests user management, authentication, and P2P payment functionality.",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrlUsers",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "baseUrlPayments",
+      "value": "http://localhost:3002",
+      "type": "string"
+    },
+    {
+      "key": "senderUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "receiverUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "senderToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "receiverToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transactionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refundTransactionId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Register Sender User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 or 409', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    pm.test('Response has user data', function () {",
+                  "        const jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property('id');",
+                  "        pm.expect(jsonData).to.have.property('email');",
+                  "        pm.expect(jsonData).to.have.property('createdAt');",
+                  "        ",
+                  "        // Store sender user ID for later use",
+                  "        pm.collectionVariables.set('senderUserId', jsonData.id);",
+                  "    });",
+                  "",
+                  "    pm.test('Email matches request', function () {",
+                  "        const jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.email).to.eql('alice@payments.com');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@payments.com\",\n  \"password\": \"SecurePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/register",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Receiver User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 or 409', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    pm.test('Response has user data', function () {",
+                  "        const jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property('id');",
+                  "        pm.expect(jsonData).to.have.property('email');",
+                  "        pm.expect(jsonData).to.have.property('createdAt');",
+                  "        ",
+                  "        // Store receiver user ID for later use",
+                  "        pm.collectionVariables.set('receiverUserId', jsonData.id);",
+                  "    });",
+                  "",
+                  "    pm.test('Email matches request', function () {",
+                  "        const jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.email).to.eql('bob@payments.com');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@payments.com\",\n  \"password\": \"SecurePass456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/register",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "register"]
+            }
+          }
+        },
+        {
+          "name": "Authenticate Sender",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has authentication data', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('isAuthenticated');",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "    pm.expect(jsonData.isAuthenticated).to.be.true;",
+                  "    ",
+                  "    // Store sender token and user ID for later use",
+                  "    pm.collectionVariables.set('senderToken', jsonData.accessToken);",
+                  "    pm.collectionVariables.set('senderUserId', jsonData.id);",
+                  "});",
+                  "",
+                  "pm.test('User ID matches registered sender', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const expectedUserId = pm.collectionVariables.get('senderUserId');",
+                  "    pm.expect(jsonData.id).to.eql(expectedUserId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@payments.com\",\n  \"password\": \"SecurePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/authenticate",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "authenticate"]
+            }
+          }
+        },
+        {
+          "name": "Authenticate Receiver",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has authentication data', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "    pm.expect(jsonData.isAuthenticated).to.be.true;",
+                  "    ",
+                  "    // Store receiver token and user ID for later use",
+                  "    pm.collectionVariables.set('receiverToken', jsonData.accessToken);",
+                  "    pm.collectionVariables.set('receiverUserId', jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@payments.com\",\n  \"password\": \"SecurePass456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/authenticate",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "authenticate"]
+            }
+          }
+        },
+        {
+          "name": "Get Sender Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has user profile', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('createdAt');",
+                  "    pm.expect(jsonData.email).to.eql('alice@payments.com');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/{{senderUserId}}",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "{{senderUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Sender Balance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Balance updated successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('newBalance');",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.newBalance).to.eql('$100.00');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"balanceInCents\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/{{senderUserId}}/balance",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "{{senderUserId}}", "balance"]
+            }
+          }
+        },
+        {
+          "name": "Update Receiver Balance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Balance updated successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('newBalance');",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.newBalance).to.eql('$50.00');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receiverToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"balanceInCents\": 5000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/{{receiverUserId}}/balance",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "{{receiverUserId}}", "balance"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment Processing",
+      "item": [
+        {
+          "name": "Send Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Payment created successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('fromUserId');",
+                  "    pm.expect(jsonData).to.have.property('toUserId');",
+                  "    pm.expect(jsonData).to.have.property('amount');",
+                  "    pm.expect(jsonData).to.have.property('currency');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData).to.have.property('description');",
+                  "    pm.expect(jsonData).to.have.property('createdAt');",
+                  "    ",
+                  "    // Store transaction ID for later use",
+                  "    pm.collectionVariables.set('transactionId', jsonData.id);",
+                  "    ",
+                  "    // Verify payment details",
+                  "    pm.expect(jsonData.status).to.eql('PENDING');",
+                  "    pm.expect(jsonData.amount).to.eql('$25.00');",
+                  "    pm.expect(jsonData.currency).to.eql('USD');",
+                  "    pm.expect(jsonData.description).to.eql('Test payment for coffee');",
+                  "});",
+                  "",
+                  "pm.test('User IDs match request', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    const expectedSenderId = pm.collectionVariables.get('senderUserId');",
+                  "    const expectedReceiverId = pm.collectionVariables.get('receiverUserId');",
+                  "    pm.expect(jsonData.fromUserId).to.eql(expectedSenderId);",
+                  "    pm.expect(jsonData.toUserId).to.eql(expectedReceiverId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromUserId\": \"{{senderUserId}}\",\n  \"toUserId\": \"{{receiverUserId}}\",\n  \"amountCents\": 2500,\n  \"currencyCode\": \"USD\",\n  \"description\": \"Test payment for coffee\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments"]
+            }
+          }
+        },
+        {
+          "name": "Get Payment Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Payment details retrieved', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    ",
+                  "    const expectedTransactionId = pm.collectionVariables.get('transactionId');",
+                  "    pm.expect(jsonData.id).to.eql(expectedTransactionId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/{{transactionId}}",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "{{transactionId}}"]
+            }
+          }
+        },
+        {
+          "name": "Process Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Payment processed successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData).to.have.property('processedAt');",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData).to.have.property('senderNewBalance');",
+                  "    pm.expect(jsonData).to.have.property('receiverNewBalance');",
+                  "    ",
+                  "    pm.expect(jsonData.status).to.eql('COMPLETED');",
+                  "    pm.expect(jsonData.message).to.include('Payment completed successfully');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/{{transactionId}}/process",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "{{transactionId}}", "process"]
+            }
+          }
+        },
+        {
+          "name": "Get Sender Payment History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Payment history retrieved', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('payments');",
+                  "    pm.expect(jsonData.payments).to.be.an('array');",
+                  "    pm.expect(jsonData.totalPayments).to.be.greaterThan(0);",
+                  "    ",
+                  "    // Check if our payment is in the history",
+                  "    const expectedTransactionId = pm.collectionVariables.get('transactionId');",
+                  "    const foundPayment = jsonData.payments.find(payment => payment.id === expectedTransactionId);",
+                  "    pm.expect(foundPayment).to.not.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/user/{{senderUserId}}/history",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "user", "{{senderUserId}}", "history"]
+            }
+          }
+        },
+        {
+          "name": "Get Receiver Payment History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Receiver payment history retrieved', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('payments');",
+                  "    pm.expect(jsonData.payments).to.be.an('array');",
+                  "    pm.expect(jsonData.totalPayments).to.be.greaterThan(0);",
+                  "    ",
+                  "    // Check if our payment is in the receiver's history",
+                  "    const expectedTransactionId = pm.collectionVariables.get('transactionId');",
+                  "    const foundPayment = jsonData.payments.find(payment => payment.id === expectedTransactionId);",
+                  "    pm.expect(foundPayment).to.not.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{receiverToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/user/{{receiverUserId}}/history",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "user", "{{receiverUserId}}", "history"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment Refund Flow",
+      "item": [
+        {
+          "name": "Send Another Payment for Refund Test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Payment created for refund test', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.status).to.eql('PENDING');",
+                  "    ",
+                  "    // Store this transaction ID for refund testing",
+                  "    pm.collectionVariables.set('refundTransactionId', jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromUserId\": \"{{senderUserId}}\",\n  \"toUserId\": \"{{receiverUserId}}\",\n  \"amountCents\": 1500,\n  \"currencyCode\": \"USD\",\n  \"description\": \"Payment for refund testing\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments"]
+            }
+          }
+        },
+        {
+          "name": "Process Payment for Refund",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Payment processed for refund test', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.eql('COMPLETED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/{{refundTransactionId}}/process",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "{{refundTransactionId}}", "process"]
+            }
+          }
+        },
+        {
+          "name": "Refund Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Payment refunded successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "    pm.expect(jsonData).to.have.property('refundedAmount');",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData).to.have.property('senderNewBalance');",
+                  "    pm.expect(jsonData).to.have.property('receiverNewBalance');",
+                  "    ",
+                  "    pm.expect(jsonData.status).to.eql('REFUNDED');",
+                  "    pm.expect(jsonData.refundedAmount).to.eql('$15.00');",
+                  "    pm.expect(jsonData.message).to.include('refunded successfully');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/{{refundTransactionId}}/refund",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "{{refundTransactionId}}", "refund"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Error Scenarios",
+      "item": [
+        {
+          "name": "Send Payment with Invalid User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error message for invalid user', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('not found');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromUserId\": \"{{senderUserId}}\",\n  \"toUserId\": \"invalid-user-id-12345\",\n  \"amountCents\": 1000,\n  \"currencyCode\": \"USD\",\n  \"description\": \"Payment to invalid user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments"]
+            }
+          }
+        },
+        {
+          "name": "Send Payment to Self",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error message for self payment', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('cannot send a payment to yourself');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromUserId\": \"{{senderUserId}}\",\n  \"toUserId\": \"{{senderUserId}}\",\n  \"amountCents\": 1000,\n  \"currencyCode\": \"USD\",\n  \"description\": \"Payment to self\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments"]
+            }
+          }
+        },
+        {
+          "name": "Send Payment with Zero Amount",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error message for zero amount', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('greater than zero');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromUserId\": \"{{senderUserId}}\",\n  \"toUserId\": \"{{receiverUserId}}\",\n  \"amountCents\": 0,\n  \"currencyCode\": \"USD\",\n  \"description\": \"Zero amount payment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments"]
+            }
+          }
+        },
+        {
+          "name": "Send Payment with Negative Amount",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error message for negative amount', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('Unable to create payment');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromUserId\": \"{{senderUserId}}\",\n  \"toUserId\": \"{{receiverUserId}}\",\n  \"amountCents\": -500,\n  \"currencyCode\": \"USD\",\n  \"description\": \"Negative amount payment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments"]
+            }
+          }
+        },
+        {
+          "name": "Send Payment with Invalid Currency",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error message for invalid currency', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromUserId\": \"{{senderUserId}}\",\n  \"toUserId\": \"{{receiverUserId}}\",\n  \"amountCents\": 1000,\n  \"currencyCode\": \"INVALID\",\n  \"description\": \"Invalid currency payment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments"]
+            }
+          }
+        },
+        {
+          "name": "Get Non-existent Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error message for non-existent payment', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('Payment not found');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/tx_nonexistent12345",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "tx_nonexistent12345"]
+            }
+          }
+        },
+        {
+          "name": "Process Non-existent Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error message for processing non-existent payment', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('Payment not found');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/tx_nonexistent12345/process",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "tx_nonexistent12345", "process"]
+            }
+          }
+        },
+        {
+          "name": "Refund Non-existent Payment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error message for refunding non-existent payment', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('Payment not found');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/tx_nonexistent12345/refund",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "tx_nonexistent12345", "refund"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication Tests",
+      "item": [
+        {
+          "name": "Access Protected User Route Without Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Unauthorized access rejected', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/{{senderUserId}}",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "{{senderUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "Access Payment Route Without Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Unauthorized payment access rejected', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromUserId\": \"{{senderUserId}}\",\n  \"toUserId\": \"{{receiverUserId}}\",\n  \"amountCents\": 1000,\n  \"currencyCode\": \"USD\",\n  \"description\": \"Unauthorized payment attempt\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments"]
+            }
+          }
+        },
+        {
+          "name": "Access Payment History Without Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Unauthorized payment history access rejected', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/user/{{senderUserId}}/history",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "user", "{{senderUserId}}", "history"]
+            }
+          }
+        },
+        {
+          "name": "Access Other User's Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 403', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test('Forbidden access to other user profile', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/{{receiverUserId}}",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "{{receiverUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "Access Other User's Payment History",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 403', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test('Forbidden access to other user payment history', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrlPayments}}/payments/user/{{receiverUserId}}/history",
+              "host": ["{{baseUrlPayments}}"],
+              "path": ["payments", "user", "{{receiverUserId}}", "history"]
+            }
+          }
+        },
+        {
+          "name": "Update Other User's Balance",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 403', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test('Forbidden access to update other user balance', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{senderToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"balanceCents\": 99999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/{{receiverUserId}}/balance",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "{{receiverUserId}}", "balance"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Registration Edge Cases",
+      "item": [
+        {
+          "name": "Register User with Duplicate Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 or 409', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 409]);",
+                  "});",
+                  "",
+                  "pm.test('Error message for duplicate email', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.satisfy(msg => msg.includes('already exists') || msg.includes('duplicate'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@payments.com\",\n  \"password\": \"DifferentPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/register",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register User with Invalid Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error message for invalid email', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid-email-format\",\n  \"password\": \"ValidPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/register",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register User with Weak Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Error message for weak password', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"weakpassword@test.com\",\n  \"password\": \"123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/register",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "register"]
+            }
+          }
+        },
+        {
+          "name": "Authenticate with Wrong Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Error message for wrong password', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.satisfy(msg => msg.includes('Invalid credentials') || msg.includes('authentication failed'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@payments.com\",\n  \"password\": \"WrongPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/authenticate",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "authenticate"]
+            }
+          }
+        },
+        {
+          "name": "Authenticate Non-existent User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Error message for non-existent user', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nonexistent@payments.com\",\n  \"password\": \"SomePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrlUsers}}/users/authenticate",
+              "host": ["{{baseUrlUsers}}"],
+              "path": ["users", "authenticate"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "// Add any global setup here if needed"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script",
+          "pm.test('Response time is less than 5000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "if (pm.response.headers.get('Content-Type') && pm.response.headers.get('Content-Type').includes('application/json')) {",
+          "    pm.test('Response has valid JSON structure', function () {",
+          "        pm.response.to.be.json;",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ]
+}
