@@ -26,4 +26,4 @@ RUN find /app -name "main.js" -type f
 EXPOSE 3002
 
 # Start the application using the correct path to main.js
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/apps/payment-service/src/main.js"]
